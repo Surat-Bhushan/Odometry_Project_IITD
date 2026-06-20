@@ -1,1 +1,1 @@
-# Odometry_Project_IITD
+# Project 10 — Drawing a Vehicle’s Path from LiDAR with ICP (KITTI)
