@@ -71,7 +71,7 @@ Contents:
 ## 1. Preprocessing
 
 - Remove invalid points
-- Apply voxel grid downsampling with voxel_size of 0.2.
+- Apply voxel grid downsampling with voxel_size of 0.3/0.5 (for coarse).
 - (Optional) choosing 30k random points for point cloud plotting.
 
 ## 2. Point-to-Point ICP
