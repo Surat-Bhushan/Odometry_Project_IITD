@@ -73,7 +73,7 @@ Contents:
 ## 1. Preprocessing
 
 - Remove invalid points
-- Apply voxel grid downsampling
+- Apply voxel grid downsampling with voxel_size of 0.2.
 - (Optional) choosing 30k random points for point cloud plotting.
 
 ## 2. Point-to-Point ICP
@@ -81,7 +81,7 @@ Contents:
 - KD-tree nearest neighbour search
 - Closed-form SVD transformation estimation
 - Adaptive outlier rejection, Constant-velocity initial guess
-- Iterative refinement until convergence
+- Iterative refinement until convergence. max_iterations=50, tolerance=1e-6
 
 ## 3. Point-to-Plane ICP
 
