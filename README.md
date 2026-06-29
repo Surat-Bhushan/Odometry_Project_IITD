@@ -10,7 +10,6 @@
 - [Features](#features)
 - [Dataset](#dataset)
 - [Methodology](#methodology)
-- [Implementation](#implementation)
 - [Evaluation Metrics](#evaluation-metrics)
 - [Results](#results)
 - [Project Structure](#project-structure)
