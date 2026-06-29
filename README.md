@@ -326,4 +326,4 @@ The experimental results demonstrate that the **Point-to-Plane ICP implementatio
 
 **Surat Bhushan**
 
-IIT Delhi Internship Project conducted during 1 June- 30 June, 2026.
+IIT Delhi Internship Project
