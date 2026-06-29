@@ -43,14 +43,13 @@ The complete pipeline includes:
 
 # Features
 
-- Pure NumPy + SciPy implementation
-- No Open3D ICP implementation used
+- Pure NumPy + SciPy implementation, No Open3D ICP implementation used
 - Point-to-Point ICP
 - Point-to-Plane ICP
-- PCA-based surface normal estimation
+- Data processing: removal of invalid points, random point selection before plotting, voxel downsampling.
 - Adaptive outlier rejection
-- Constant-velocity initial guess
-- Trajectory visualization
+- Constant-velocity initial guess + coarse initial guess (for failure case)
+- Trajectory and point cloud visualisation
 - Drift analysis
 - Failure case demonstration
 
@@ -65,8 +64,8 @@ Contents:
 - Velodyne LiDAR scans (`.bin`)
 - Ground-truth poses (`07.txt`)
 - Calibration (`calib.txt`)
-=> This dataset can be downloaded using download_data.sh file available in this repo.
-=> The dataset can be downloaded using:- https://www.cvlibs.net/datasets/kitti/eval_odometry.php.
+=> This dataset can be downloaded using download_data.sh file which is available in this repo.
+=> The dataset can be downloaded through the official KITTI website:- https://www.cvlibs.net/datasets/kitti/eval_odometry.php.
 ---
 
 # Methodology
@@ -75,26 +74,32 @@ Contents:
 
 - Remove invalid points
 - Apply voxel grid downsampling
+- (Optional) choosing 30k random points for point cloud plotting.
 
 ## 2. Point-to-Point ICP
 
 - KD-tree nearest neighbour search
 - Closed-form SVD transformation estimation
+- Adaptive outlier rejection, Constant-velocity initial guess
 - Iterative refinement until convergence
 
 ## 3. Point-to-Plane ICP
 
 - Surface normal estimation using PCA
 - Linear least-squares optimization
+- Adaptive outlier rejection, Constant-velocity initial guess
 - Improved robustness and accuracy
 
-## 4. Pose Estimation
+## 4. Pose Estimation and Error Calculation
 
-Relative transforms are accumulated to obtain the complete vehicle trajectory.
+Relative transforms are accumulated to obtain the complete vehicle trajectory. ATE and RPE are calculated. Drift is analysed.
 
 ## 5. Calibration
 
 Estimated poses are transformed into the camera coordinate frame using KITTI calibration.
+
+## 6. Plotting and Visualisation
+Point clouds and graphs are plotted for visual demonstration.
 
 ---
 
@@ -287,7 +292,7 @@ The experiment highlights the importance of initialization in ICP-based scan reg
 
 The implementation automatically generates the following visualizations:
 
-- Individual LiDAR point cloud visualization
+- Individual LiDAR point cloud visualisation for Frames and Frame 4
 - Overlay of two scans before ICP registration
 - Overlay after successful ICP alignment
 - Estimated trajectory vs. KITTI ground-truth trajectory
@@ -325,5 +330,6 @@ The experimental results demonstrate that the **Point-to-Plane ICP implementatio
 # Author
 
 **Surat Bhushan**
+Under the guidance of Prashant Kumar Sir.
 
 IIT Delhi Internship Project
