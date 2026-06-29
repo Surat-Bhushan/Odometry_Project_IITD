@@ -331,6 +331,6 @@ The program will:
 # Author
 
 **Surat Bhushan**
-Under the guidance of Prashant Kumar Sir.
+(Under the guidance of Prashant Kumar Sir, IIT Delhi, CS Department)
 
 IIT Delhi Internship Project
