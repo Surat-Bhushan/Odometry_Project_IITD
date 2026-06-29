@@ -24,20 +24,19 @@
 
 # Project Overview
 
-This project estimates the trajectory of a vehicle using consecutive LiDAR scans from the KITTI Odometry dataset.
+This project estimates a vehicle's trajectory using consecutive LiDAR scans from the KITTI Odometry dataset.
 
 The complete pipeline includes:
 
 - Loading raw KITTI `.bin` LiDAR scans
 - Point cloud preprocessing
-- Voxel grid downsampling
 - Point-to-Point ICP
 - Point-to-Plane ICP
 - Pose accumulation
 - LiDAR-to-camera calibration
 - Trajectory estimation
 - Quantitative evaluation using ATE and RPE
-- Failure case analysis and visualization
+- Failure case analysis and visualisation
 
 ---
 
@@ -100,20 +99,6 @@ Estimated poses are transformed into the camera coordinate frame using KITTI cal
 
 ## 6. Plotting and Visualisation
 Point clouds and graphs are plotted for visual demonstration.
-
----
-
-# Implementation
-
-Main modules include:
-
-- Data loading
-- Voxel downsampling
-- Normal estimation
-- ICP algorithms
-- Pose accumulation
-- Evaluation
-- Visualization
 
 ---
 
