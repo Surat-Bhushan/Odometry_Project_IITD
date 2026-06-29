@@ -80,7 +80,7 @@ Contents:
 - KD-tree nearest neighbour search
 - Closed-form SVD transformation estimation
 - Adaptive outlier rejection, Constant-velocity initial guess
-- Iterative refinement until convergence. max_iterations=50, tolerance=1e-6
+- Iterative refinement until convergence. max_iterations=50/30/100 (depending upon the frames on which icp is running), tolerance=1e-6
 
 ## 3. Point-to-Plane ICP
 
