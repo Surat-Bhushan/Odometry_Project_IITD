@@ -18,7 +18,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Future Improvements](#future-improvements)
-- [Acknowledgements](#acknowledgements)
+- [Author](#author)
 
 ---
 
@@ -148,67 +148,6 @@ project/
 ```
 
 ---
-
-# Requirements
-
-- Python 3.9+
-- NumPy
-- SciPy
-- Matplotlib
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# Installation
-
-```bash
-git clone <repository-url>
-cd <repository-name>
-
-pip install -r requirements.txt
-```
-
-Download KITTI Sequence 07 and place it under:
-
-```text
-dataset/sequences/07/
-```
-
----
-
-# Usage
-
-Run:
-
-```bash
-python main.py
-```
-
-The program will:
-
-1. Load LiDAR scans
-2. Perform ICP registration
-3. Estimate vehicle trajectory
-4. Compare against ground truth
-5. Display evaluation metrics and plots
-
----
-
-# Future Improvements
-
-- Loop closure
-- Global pose graph optimization
-- Scan-to-map registration
-- GPU acceleration
-- Robust M-estimators
-- Dynamic object removal
-
----
 # Results
 
 The proposed LiDAR odometry pipeline was evaluated on **KITTI Odometry Sequence 07** using the first **10 consecutive LiDAR frames (Frames 0–9)**. Both **Point-to-Point ICP** and **Point-to-Plane ICP** were implemented and compared against the KITTI ground-truth trajectory.
@@ -326,6 +265,68 @@ Rotation RPE      : 0.26°
 
 The experimental results demonstrate that the **Point-to-Plane ICP implementation consistently outperforms the Point-to-Point variant in trajectory estimation accuracy**, achieving **sub-centimetre Absolute Trajectory Error** on KITTI Sequence 07 while maintaining low rotational error.
 
+---
+
+# Requirements
+
+- Python 3.9+
+- NumPy
+- SciPy
+- Matplotlib
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# Installation
+
+```bash
+git clone <repository-url>
+cd <repository-name>
+
+pip install -r requirements.txt
+```
+
+Download KITTI Sequence 07 and place it under:
+
+```text
+dataset/sequences/07/
+```
+
+---
+
+# Usage
+
+Run:
+
+```bash
+python main.py
+```
+
+The program will:
+
+1. Load LiDAR scans
+2. Perform ICP registration
+3. Estimate vehicle trajectory
+4. Compare against ground truth
+5. Display evaluation metrics and plots
+
+---
+
+# Future Improvements
+
+- Loop closure
+- Global pose graph optimization
+- Scan-to-map registration
+- GPU acceleration
+- Robust M-estimators
+- Dynamic object removal
+
+---
 
 # Author
 
