@@ -30,9 +30,11 @@ The complete pipeline includes:
 - Loading raw KITTI `.bin` LiDAR scans, calibration (.txt file), and ground truth (.txt file).  
 - Point Visualisation before and after point to point ICP.
 - Point-to-Point ICP and Point-to-Plane ICP on 10 consecutive frames.
-- Pose accumulation and LiDAR-to-camera calibration
+- Pose accumulation
+- LiDAR-to-camera calibration
 - Trajectory estimation
-- Quantitative evaluation using ATE, RPE and Visualisation of drift
+- Quantitative evaluation using ATE, RPE
+- Visualisation of drift
 - Failure case analysis (Frame 0 & 19, good and bad guesses)
 
 ---
