@@ -1,6 +1,6 @@
 # Project: Drawing a Vehicle's Path from LiDAR Scans (KITTI)
 
-> A complete implementation of LiDAR odometry using the **Iterative Closest Point (ICP)** algorithm on **KITTI Odometry Sequence 07**, developed from scratch without using Open3D or external ICP libraries.
+> A complete implementation of LiDAR odometry using the **Iterative Closest Point (ICP)** algorithm on **KITTI Odometry Sequence 07 (Static and Dynamic)**, developed from scratch without using Open3D or external ICP libraries.
 
 ---
 
