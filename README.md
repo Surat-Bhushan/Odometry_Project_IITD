@@ -28,14 +28,15 @@ This project estimates a vehicle's trajectory using consecutive LiDAR scans from
 The complete pipeline includes:
 
 - Loading raw KITTI `.bin` LiDAR scans, calibration (.txt file), and ground truth (.txt file).  
-- Point cloud preprocessing
+- Point cloud preprocessing and Visualization
 - Point-to-Point ICP
 - Point-to-Plane ICP
+- Visualisation of point-to-point ICP (Frame 0 & 4)
 - Pose accumulation
 - LiDAR-to-camera calibration
 - Trajectory estimation
 - Quantitative evaluation using ATE and RPE
-- Failure case analysis and visualisation
+- Failure case analysis (Frame 0 & 19, good and bad guess)
 
 ---
 # Features
@@ -100,10 +101,10 @@ Point clouds and graphs are plotted for visual demonstration.
 ## 7. Failure Case Demonstration
 ### The 4 Test Cases
 1.  **Point‑to‑Point (No Guess)**:
-    - Starts from the artificially rotated source.
+    - Starts from the 20-degree artificially rotated source with 100 iterations to give enough chance to come out of local minima.
     - **Result**: **Fails** (high distance error). Gets trapped in a poor local minimum.
 2.  **Point‑to‑Point (With Coarse Guess)**:
-    - Uses a low-resolution ICP (voxel size 0.5) to get a rough alignment, then refines.
+    - Uses a low-resolution ICP (voxel size 0.5) to get a rough alignment, then refines with 50 iterations.
     - **Result**: **Succeeds**. The coarse guess brings it into the correct convergence basin.
 3.  **Point‑to‑Plane (No Guess)**:
     - Starts from the artificially rotated source.
