@@ -78,7 +78,7 @@ Contents:
 - KD-tree nearest neighbour search
 - Closed-form SVD transformation estimation
 - Applying voxel grid downsampling with voxel_size of 0.3/0.5 (for coarse)
-- Adaptive outlier rejection (3* median height), Constant-velocity initial guess
+- Adaptive outlier rejection (3* median distances), Constant-velocity initial guess
 - Iterative refinement until convergence. max_iterations=50/30/100 (for good guess, trajectory & visualization, bad guess), tolerance=1e-6
 
 ## 3. Point-to-Plane ICP
