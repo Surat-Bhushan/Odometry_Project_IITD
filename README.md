@@ -7,11 +7,11 @@
 ## Table of Contents
 
 - [Project Overview](#project-overview)
-- [Features](#features)
 - [Dataset](#dataset)
 - [Methodology](#methodology)
 - [Evaluation Metrics](#evaluation-metrics)
 - [Results](#results)
+- [Features](#features)
 - [Project Structure](#project-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -36,20 +36,6 @@ The complete pipeline includes:
 - Trajectory estimation
 - Quantitative evaluation using ATE and RPE
 - Failure case analysis and visualisation
-
----
-
-# Features
-
-- Pure NumPy + SciPy implementation, No Open3D ICP implementation used
-- Point-to-Point ICP
-- Point-to-Plane ICP
-- Data processing: removal of invalid points, random point selection before plotting, voxel downsampling.
-- Adaptive outlier rejection
-- Constant-velocity initial guess + coarse initial guess (for failure case)
-- Trajectory and point cloud visualisation
-- Drift analysis
-- Failure case demonstration
 
 ---
 
@@ -110,6 +96,19 @@ Measures global trajectory accuracy.
 ## Relative Pose Error (RPE)
 
 Measures frame-to-frame motion estimation accuracy.
+
+---
+# Features
+
+- Pure NumPy + SciPy implementation, No Open3D ICP implementation used
+- Point-to-Point ICP
+- Point-to-Plane ICP
+- Data processing: removal of invalid points, random point selection before plotting, voxel downsampling.
+- Adaptive outlier rejection
+- Constant-velocity initial guess + coarse initial guess (for failure case)
+- Trajectory and point cloud visualisation
+- Drift analysis
+- Failure case demonstration
 
 ---
 
