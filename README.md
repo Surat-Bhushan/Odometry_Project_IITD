@@ -35,8 +35,8 @@ The complete pipeline includes:
 - Pose accumulation
 - LiDAR-to-camera calibration
 - Trajectory estimation
-- Quantitative evaluation using ATE and RPE
-- Failure case analysis (Frame 0 & 19, good and bad guess)
+- Quantitative evaluation using ATE, RPE and Visualisation of drift
+- Failure case analysis (Frame 0 & 19, good and bad guesses)
 
 ---
 # Features
@@ -96,7 +96,7 @@ Relative transforms are accumulated to obtain the complete vehicle trajectory. E
 ATE(Absolute Trajectory Error) and RPE(Relative Pose Error) are calculated. Drift is analysed.
 
 ## 6. Plotting and Visualisation
-Point clouds and graphs are plotted for visual demonstration.
+Point clouds (Frames and ICP) and graphs (Drift using ATE in both ICP types, estimated and actual trajectory) are plotted for visual demonstration.
 
 ## 7. Failure Case Demonstration
 ### The 4 Test Cases
