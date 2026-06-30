@@ -28,12 +28,9 @@ This project estimates a vehicle's trajectory using consecutive LiDAR scans from
 The complete pipeline includes:
 
 - Loading raw KITTI `.bin` LiDAR scans, calibration (.txt file), and ground truth (.txt file).  
-- Point cloud preprocessing and Visualization
-- Point-to-Point ICP
-- Point-to-Plane ICP
-- Visualisation of point-to-point ICP (Frame 0 & 4)
-- Pose accumulation
-- LiDAR-to-camera calibration
+- Point Visualisation before and after point to point ICP.
+- Point-to-Point ICP and Point-to-Plane ICP on 10 consecutive frames.
+- Pose accumulation and LiDAR-to-camera calibration
 - Trajectory estimation
 - Quantitative evaluation using ATE, RPE and Visualisation of drift
 - Failure case analysis (Frame 0 & 19, good and bad guesses)
