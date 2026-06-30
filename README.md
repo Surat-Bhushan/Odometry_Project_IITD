@@ -7,11 +7,11 @@
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Features](#features)
 - [Dataset](#dataset)
 - [Methodology](#methodology)
 - [Evaluation Metrics](#evaluation-metrics)
 - [Results](#results)
-- [Features](#features)
 - [Project Structure](#project-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -27,7 +27,7 @@ This project estimates a vehicle's trajectory using consecutive LiDAR scans from
 
 The complete pipeline includes:
 
-- Loading raw KITTI `.bin` LiDAR scans
+- Loading raw KITTI `.bin` LiDAR scans, calibration (.txt file), and ground truth (.txt file).  
 - Point cloud preprocessing
 - Point-to-Point ICP
 - Point-to-Plane ICP
@@ -36,6 +36,20 @@ The complete pipeline includes:
 - Trajectory estimation
 - Quantitative evaluation using ATE and RPE
 - Failure case analysis and visualisation
+
+---
+# Features
+
+- Pure NumPy + SciPy implementation, No Open3D ICP implementation used
+- Point-to-Point ICP
+- Point-to-Plane ICP
+- Data processing: removal of invalid points, random point selection before plotting, voxel downsampling.
+- Adaptive outlier rejection
+- Constant-velocity initial guess + coarse initial guess (for failure case)
+- Trajectory and point cloud visualisation
+- Drift analysis
+- Failure case demonstration
+- (Optional) choosing 30k random points for point cloud plotting.
 
 ---
 
@@ -55,35 +69,48 @@ Contents:
 # Methodology
 
 ## 1. Preprocessing
-
+- Extracting (Nx3) array from .bin files, transformation matrix from calib.txt file, and ground truth poses from 07.txt file.
 - Remove invalid points
-- Apply voxel grid downsampling with voxel_size of 0.3/0.5 (for coarse).
-- (Optional) choosing 30k random points for point cloud plotting.
 
 ## 2. Point-to-Point ICP
 
 - KD-tree nearest neighbour search
 - Closed-form SVD transformation estimation
-- Adaptive outlier rejection, Constant-velocity initial guess
-- Iterative refinement until convergence. max_iterations=50/30/100 (depending upon the frames on which icp is running), tolerance=1e-6
+- Applying voxel grid downsampling with voxel_size of 0.3/0.5 (for coarse)
+- Adaptive outlier rejection (3* median height), Constant-velocity initial guess
+- Iterative refinement until convergence. max_iterations=50/30/100 (for good guess, trajectory & visualization, bad guess), tolerance=1e-6
 
 ## 3. Point-to-Plane ICP
 
-- Surface normal estimation using PCA
+- Surface normal estimation using PCA (Principal Component Analysis)
 - Linear least-squares optimization
 - Adaptive outlier rejection, Constant-velocity initial guess
 - Improved robustness and accuracy
 
-## 4. Pose Estimation and Error Calculation
+## 4. Pose Estimation and Calibration
 
-Relative transforms are accumulated to obtain the complete vehicle trajectory. ATE and RPE are calculated. Drift is analysed.
+Relative transforms are accumulated to obtain the complete vehicle trajectory. Estimated poses are transformed into the camera coordinate frame using KITTI calibration. 
+## 5. Error Analysis
 
-## 5. Calibration
-
-Estimated poses are transformed into the camera coordinate frame using KITTI calibration.
+ATE(Absolute Trajectory Error) and RPE(Relative Pose Error) are calculated. Drift is analysed.
 
 ## 6. Plotting and Visualisation
 Point clouds and graphs are plotted for visual demonstration.
+
+## 7. Failure Case Demonstration
+### The 4 Test Cases
+1.  **Point‑to‑Point (No Guess)**:
+    - Starts from the artificially rotated source.
+    - **Result**: **Fails** (high distance error). Gets trapped in a poor local minimum.
+2.  **Point‑to‑Point (With Coarse Guess)**:
+    - Uses a low-resolution ICP (voxel size 0.5) to get a rough alignment, then refines.
+    - **Result**: **Succeeds**. The coarse guess brings it into the correct convergence basin.
+3.  **Point‑to‑Plane (No Guess)**:
+    - Starts from the artificially rotated source.
+    - **Result**: **Succeeds / More Robust**. The plane constraints allow it to converge despite the 20° rotational error.
+4.  **Point‑to‑Plane (With Coarse Guess)**:
+    - Uses the same coarse initial guess as Case 2.
+    - **Result**: **Best Performance**. Achieves the lowest alignment error.
 
 ---
 
@@ -96,39 +123,6 @@ Measures global trajectory accuracy.
 ## Relative Pose Error (RPE)
 
 Measures frame-to-frame motion estimation accuracy.
-
----
-# Features
-
-- Pure NumPy + SciPy implementation, No Open3D ICP implementation used
-- Point-to-Point ICP
-- Point-to-Plane ICP
-- Data processing: removal of invalid points, random point selection before plotting, voxel downsampling.
-- Adaptive outlier rejection
-- Constant-velocity initial guess + coarse initial guess (for failure case)
-- Trajectory and point cloud visualisation
-- Drift analysis
-- Failure case demonstration
-
----
-
-# Project Structure
-
-```text
-project/
-│
-├── main.py
-├── requirements.txt
-├── README.md
-├── download_data.sh
-│
-└── dataset/
-    └── sequences/
-        └── 07/
-            ├── velodyne/
-            ├── calib.txt
-            └── 07.txt
-```
 
 ---
 # Results
@@ -229,6 +223,28 @@ The implementation automatically generates the following visualizations:
 
 
 ---
+
+
+# Project Structure
+
+```text
+project/
+│
+├── main.py
+├── requirements.txt
+├── README.md
+├── download_data.sh
+│
+└── dataset/
+    └── sequences/
+        └── 07/
+            ├── velodyne/
+            ├── calib.txt
+            └── 07.txt
+```
+
+---
+
 
 ## Terminal Output Summary
 
