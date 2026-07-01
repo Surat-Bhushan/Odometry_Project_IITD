@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """
-KITTI LiDAR Odometry using ICP (from scratch) – Complete Project
-Sequence 07, frames 0-9.
-Plots: 3D point clouds (black background) and 2D trajectory (bird's-eye).
-Includes calibration to align estimated trajectory with ground truth.
-Adds constant‑velocity initial guess to ICP for better convergence.
+KITTI LiDAR Odometry using ICP – Sequence 07, frames 0-9.
 """
 
-import os
-import numpy as np
+import os # for constructing file paths in a platform-independent manner
+import numpy as np 
 import matplotlib.pyplot as plt
-from scipy.spatial import cKDTree
-from scipy.linalg import svd
+from scipy.spatial import cKDTree #eff nearest neighbour search for correspondance
+from scipy.linalg import svd #singular value decomposition for rotation matrix
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -20,13 +16,13 @@ warnings.filterwarnings("ignore")
 # ----------------------------------------------------------------------
 def load_velodyne_scan(file_path):
     """Load KITTI velodyne .bin file -> Nx3 (x,y,z), removing invalid (0,0,0) points."""
-    points = np.fromfile(file_path, dtype=np.float32).reshape(-1, 4)
+    points = np.fromfile(file_path, dtype=np.float32).reshape(-1, 4) # bin file has nx4 points
     # Keep only x, y, z
     points = points[:, :3]
     # Remove points where all coordinates are exactly zero
     mask = ~(np.all(points == 0, axis=1))
     points = points[mask]
-    return points
+    return points #returns a (n,3) numpy array
 
 
 def load_ground_truth_poses(file_path):
@@ -39,48 +35,55 @@ def load_ground_truth_poses(file_path):
                 continue
             T = np.eye(4)
             T[:3, :] = np.array(vals).reshape(3, 4)
-            poses.append(T)
-    return poses
+            #each line contains 12 values (3x4) tm in camera sys, reshape to 3x4 and embbed in 4x4. thus, np.eye() for identity matrix
+            poses.append(T) 
+    return poses # a list of 4x4 matrix
 
 def load_calibration(file_path):
     """Load KITTI calibration file and extract Tr (lidar->camera)."""
     with open(file_path, 'r') as f:
         for line in f:
-            if line.startswith('Tr:'):
+            if line.startswith('Tr:'): # this line gives transformation from the lidar coordinate system(velodyne) to the camera coordinate system (cam0)
                 parts = line.strip().split()
                 vals = list(map(float, parts[1:]))
                 Tr = np.eye(4)
-                Tr[:3, :] = np.array(vals).reshape(3, 4)
+                Tr[:3, :] = np.array(vals).reshape(3, 4) # 3x4 to 4x4
                 return Tr
-    return np.eye(4)
+    return np.eye(4) # fallback
 
 # ----------------------------------------------------------------------
 # 2. Point Cloud Preprocessing
 # ----------------------------------------------------------------------
 def downsample_voxel(points, voxel_size):
     """Voxel grid downsampling."""
+    #Downsamples a point cloud by partitioning space into voxels of size voxel_size and replacing all points in each voxel by their centroid.
     if voxel_size <= 0 or len(points) == 0:
         return points
     indices = np.floor(points / voxel_size).astype(np.int32)
+    #The voxel indices are computed by floor(points / voxel_size).
+
     voxel_dict = {}
     for i, idx in enumerate(indices):
         key = tuple(idx)
         if key not in voxel_dict:
             voxel_dict[key] = []
+            #A dictionary maps the voxel index (tuple) to a list of points; we then compute the mean for each list.
         voxel_dict[key].append(points[i])
     downsampled = [np.mean(pts, axis=0) for pts in voxel_dict.values()]
     return np.array(downsampled)
 
 def estimate_normals(pts, k=20):
-    """Estimate normals for each point using PCA on k neighbours."""
+    """Estimate normals for each point using PCA(Principal Component Analysis) on k neighbours."""
     tree = cKDTree(pts)
     normals = np.zeros_like(pts)
     for i, p in enumerate(pts):
         idx = tree.query(p, k=k+1)[1]
         neighbours = pts[idx]
         cov = np.cov(neighbours.T)
-        _, _, v = svd(cov)
+        #For each point, we query the k+1 neighbours (including itself) and compute the covariance matrix of the neighbours.
+        _, _, v = svd(cov) 
         normals[i] = v[:, -1]
+        #The eigenvector corresponding to the smallest eigenvalue (the last column of v from SVD) is the normal direction.
     return normals
 
 # ----------------------------------------------------------------------
@@ -88,20 +91,26 @@ def estimate_normals(pts, k=20):
 # ----------------------------------------------------------------------
 def estimate_transform_svd(src_pts, tgt_pts):
     """Estimate rigid transform (R, t) via SVD."""
+    #Solves the orthogonal Procrustes problem to find the rotation R and translation t that best align src_pts to tgt_pts in the least‑squares sense.
     src_center = np.mean(src_pts, axis=0)
     tgt_center = np.mean(tgt_pts, axis=0)
     src_centered = src_pts - src_center
     tgt_centered = tgt_pts - tgt_center
     H = src_centered.T @ tgt_centered
+    #The method centers both point sets and computes the cross‑covariance matrix H.
     U, _, Vt = svd(H)
     R = Vt.T @ U.T
+    #SVD of H gives U, S, Vt; the optimal rotation is R = Vt.T @ U.T.
     if np.linalg.det(R) < 0:
         Vt[-1, :] *= -1
         R = Vt.T @ U.T
+        #If the determinant of R is negative, we reflect the last row of Vt to ensure a proper rotation (det = +1).
     t = tgt_center - R @ src_center
+    #Translation is computed as the difference of the centers after rotation.
     T = np.eye(4)
     T[:3, :3] = R
     T[:3, 3] = t
+    #rotation is 3x3, we add translation to make 3x4 and then add [0,0,1] to make 4x4
     return T
 
 def icp_point_to_point(source, target, max_iterations=50, tolerance=1e-6,
@@ -116,9 +125,10 @@ def icp_point_to_point(source, target, max_iterations=50, tolerance=1e-6,
     prev_error = float('inf')
     for i in range(max_iterations):
         tree = cKDTree(tgt)
-        distances, indices = tree.query(src)
+        #Build a KD‑tree for the target for fast nearest neighbour queries.
+        distances, indices = tree.query(src) #For each source point, find its closest target point and the distance.
         if distance_threshold is None:
-            thresh = 3.0 * np.median(distances)
+            thresh = 3.0 * np.median(distances)#Determine an inlier threshold: if not provided, use 3× the median distance (robust to outliers).
         else:
             thresh = distance_threshold
         valid = distances <= thresh
@@ -127,17 +137,18 @@ def icp_point_to_point(source, target, max_iterations=50, tolerance=1e-6,
         if len(src_matched) < 10:
             print(f"ICP-P2P iter {i}: too few inliers, stopping.")
             break
-        T = estimate_transform_svd(src_matched, tgt_matched)
+        T = estimate_transform_svd(src_matched, tgt_matched)#Compute the optimal transformation using SVD.
         src_h = np.hstack((src, np.ones((src.shape[0], 1))))
-        src = (T @ src_h.T).T[:, :3]
+        src = (T @ src_h.T).T[:, :3] #Apply the transformation to the source cloud (to update its position).
         T_total = T @ T_total
+        #The cumulative transformation T_total accumulates all incremental transforms (applied to the moving source).
         if i > 0:
             mean_error = np.mean(distances[valid])
-            if abs(prev_error - mean_error) < tolerance:
+            if abs(prev_error - mean_error) < tolerance: #if the change in mean distance between iterations is below tolerance, stop.
                 print(f"ICP-P2P converged at iter {i}, error={mean_error:.6f}")
                 break
             prev_error = mean_error
-    if return_aligned:
+    if return_aligned: #If return_aligned is True, it also returns the source cloud transformed by the final T_total (useful for visualisation)
         src_h = np.hstack((source, np.ones((source.shape[0], 1))))
         aligned = (T_total @ src_h.T).T[:, :3]
         return T_total, aligned
@@ -146,12 +157,14 @@ def icp_point_to_point(source, target, max_iterations=50, tolerance=1e-6,
 def icp_point_to_plane(source, target, max_iterations=50, tolerance=1e-6,
                        distance_threshold=None, voxel_size=0.2, return_aligned=False):
     """Point‑to‑plane ICP (linearised) – can return aligned points."""
+    #Implements the point‑to‑plane ICP, which minimises the distance from the source point to the tangent plane of the target point, leading to faster convergence in many cases.
     src = source.copy()
     tgt = target.copy()
     if voxel_size > 0:
         src = downsample_voxel(src, voxel_size)
         tgt = downsample_voxel(tgt, voxel_size)
     normals_tgt = estimate_normals(tgt, k=20)
+    #Before the loop, normals of the target cloud are estimated once.
     T_total = np.eye(4)
     prev_error = float('inf')
     for i in range(max_iterations):
@@ -170,6 +183,18 @@ def icp_point_to_plane(source, target, max_iterations=50, tolerance=1e-6,
             break
         A_list = []
         b_list = []
+        '''For each valid correspondence (source point p, target point q, normal n at q), we set up a linear system for the incremental transformation parameters x = (t_x, t_y, t_z, θ_x, θ_y, θ_z) (translation and small rotation vector).
+
+The linearised point‑to‑plane error is:
+n · (R p + t - q) = 0
+with the approximation R ≈ I + [θ]× (skew‑symmetric matrix).
+This yields equations: n · t + (p × n) · θ = n · (q - p).
+
+The matrix A (6 columns) and vector b are built for all correspondences.
+
+Solve the over‑determined system using np.linalg.lstsq (least squares).
+
+Recover the incremental rotation R from the skew‑symmetric matrix of θ'''
         for j in range(len(src_matched)):
             p = src_matched[j]
             q = tgt_matched[j]
@@ -204,12 +229,13 @@ def icp_point_to_plane(source, target, max_iterations=50, tolerance=1e-6,
         aligned = (T_total @ src_h.T).T[:, :3]
         return T_total, aligned
     return T_total
+#The point‑to‑plane ICP uses a linearised rotation, which is valid for small angular increments. With good initialisation or small frame‑to‑frame motion, this approximation works well.
 
 # ----------------------------------------------------------------------
 # 4. Trajectory Evaluation
 # ----------------------------------------------------------------------
 def compute_ate(est_poses, gt_poses):
-    """Compute ATE RMSE after alignment (translation only)."""
+    """Compute ATE (Absolute Trajectory Error) RMSE after alignment (translation only)."""
     est_trans = np.array([p[:3, 3] for p in est_poses])
     gt_trans = np.array([p[:3, 3] for p in gt_poses])
     est_mean = np.mean(est_trans, axis=0)
@@ -225,6 +251,17 @@ def compute_ate(est_poses, gt_poses):
     errors = np.linalg.norm(aligned - gt_trans, axis=1)
     rmse = np.sqrt(np.mean(errors ** 2))
     return rmse, aligned
+'''Computes the Absolute Trajectory Error (ATE) RMSE between estimated and ground truth trajectories.
+
+It first extracts the translation vectors (x,y,z) from the poses.
+
+It then finds the best‑fit similarity transformation (rotation + translation, no scaling) that aligns the estimated trajectory to the ground truth using SVD (same approach as in estimate_transform_svd but for trajectory points).
+
+This alignment removes the global coordinate frame difference (which is acceptable for evaluating odometry drift).
+
+The aligned translations are compared to ground truth, and the RMSE of the Euclidean distances is returned.
+
+Also returns the aligned trajectory for potential plotting.'''
 
 def compute_rpe(est_poses, gt_poses):
     """Compute mean RPE (translation and rotation) for consecutive pairs."""
@@ -239,14 +276,22 @@ def compute_rpe(est_poses, gt_poses):
         angle = np.arccos(np.clip((np.trace(R_err) - 1) / 2, -1, 1))
         rot_errors.append(np.degrees(angle))
     return np.mean(trans_errors), np.mean(rot_errors)
+'''Computes the Relative Pose Error (RPE) for each consecutive pair of poses.
 
+For each pair i, the relative transformation from i to i+1 is computed for both estimated and ground truth.
+
+The translational error is the Euclidean distance between the relative translations.
+
+The rotational error is computed from the relative rotation matrix R_err = est_rel[:3,:3] @ gt_rel[:3,:3].T; the angle is extracted from the trace: angle = arccos((trace(R_err)-1)/2).
+
+Returns the mean translation error (in meters) and mean rotation error (in degrees).'''
 # ----------------------------------------------------------------------
 # 5. Visualisation Helpers (3D with black background)
 # ----------------------------------------------------------------------
 def plot_point_cloud_3d(point_clouds, colors, labels, title, elev=20, azim=-60, point_size=1, alpha=1, max_points=30000):
     """
     Plot one or more point clouds in 3D with a black background.
-    If a cloud has more than max_points, it is randomly subsampled.
+    If a cloud has more than max_points, it is randomly subsampled, if this feature is enabled.
     Empty clouds are skipped.
     """
     # Filter out empty clouds and subsample if needed
@@ -307,12 +352,14 @@ def main():
     velo_dir = os.path.join(base_dir, 'velodyne')
     gt_file = os.path.join(base_dir, '07.txt')
     calib_file = os.path.join(base_dir, 'calib.txt')
+    #Defines the sequence number and builds the folder structure (assuming the dataset is placed in ./dataset/sequences/07/).
 
     Tr = load_calibration(calib_file)
     Tr_inv = np.linalg.inv(Tr)
     print("Calibration Tr (lidar->camera):\n", Tr)
+    #Loads the calibration matrix Tr and its inverse (used to transform poses from LiDAR frame to camera frame).
 
-    gt_poses = load_ground_truth_poses(gt_file)
+    gt_poses = load_ground_truth_poses(gt_file)#loading ground truth poses
 
     num_frames = 10
     vis_target = 4
@@ -327,8 +374,7 @@ def main():
     print(f"Loaded frames {list(scans.keys())}")
 
     # ------------------------------------------------------------------
-    # Visualise Frame 0, Frame 4, and their overlay (before ICP)
-    # Use alpha=0.5 for overlay to show blending
+    # Visualise two frmaes and their overlay (before ICP)
     # ------------------------------------------------------------------
     plot_point_cloud_3d([scans[0]], ['#ff1493'], ['Frame 0'], 'KITTI Seq 07 – Frame 0')
     plot_point_cloud_3d([scans[vis_target]], ['#00ffff'], [f'Frame {vis_target}'], f'KITTI Seq 07 – Frame {vis_target}')
@@ -537,7 +583,6 @@ def main():
     print(f"Point-to-plane WITHOUT guess (bad start): mean dist = {np.mean(dist_plane):.4f} m, median = {np.median(dist_plane):.4f} m")
     print(f"Point-to-plane WITH good guess:           mean dist = {np.mean(dist_plane_guess):.4f} m, median = {np.median(dist_plane_guess):.4f} m")
 
-    print("\nExplanation: A 20° rotational error makes point‑to‑point ICP without a good initial guess converge to a poor local minimum (large alignment error). A coarse initial guess (from ICP with large voxel) corrects this. Point‑to‑plane is more robust and still works even with the bad guess.")
 
 if __name__ == '__main__':
     main()
