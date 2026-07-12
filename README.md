@@ -17,6 +17,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Future Improvements](#future-improvements)
+- [Development Journey](#development-journey)
 - [Author](#author)
 
 ---
@@ -327,6 +328,26 @@ The program will:
 - Dynamic object removal
 
 ---
+## Development Journey
+
+This section briefly documents how the project evolved from the first idea to the final implementation. 
+
+- Started by looking for the KITTI dataset. Initially found a preprocessed static version, as downloading the complete (~80 GB) dataset wasn't practical.
+- Understood the dataset structure, converted `(3,64,1024)` scans into `(N,3)` point clouds, removed invalid points, and visualized the first LiDAR scans.
+- Plotted consecutive frames to understand how the vehicle motion appears in LiDAR data.
+- Implemented KD-Tree based nearest-neighbour correspondence search.
+- Implemented rigid transformation estimation using SVD and verified the computed rotation and translation on a single scan pair.
+- Built the complete Point-to-Point ICP algorithm from scratch and successfully aligned consecutive LiDAR frames.
+- Extended ICP to estimate the vehicle trajectory over multiple frames and compared it with KITTI ground truth.
+- Spent almost 36 hours debugging because the estimated trajectory had incorrect scale and orientation. Eventually discovered that the initial static dataset had been preprocessed/normalized, making it unsuitable for odometry evaluation.
+- Switched to the official KITTI `.bin` files after a teammate downloaded the complete dataset and extracted only Sequence 07.
+- Scale became correct, but orientation still didn't match. Investigated coordinate-frame differences, plotted every possible axis combination, downloaded `calib.txt`, and checked the LiDAR-to-camera transformation.
+- Calibration alone didn't solve the issue, so the focus shifted toward improving the ICP implementation itself.
+- Experimented with adaptive outlier rejection, voxel downsampling, convergence thresholds, and error metrics. Tried multiple combinations, some aggregated the problem, some made the project better. Removed aggressive downsampling after observing that it reduced registration accuracy.
+- Implemented Point-to-Plane ICP after studying why Point-to-Point ICP tends to underestimate translation in repetitive environments such as roads and buildings.
+- Compared both methods using ATE, RPE, trajectory plots, drift analysis, and failure cases. Point-to-Plane ICP consistently produced much better trajectory accuracy.
+- After validating all concepts and experiments, rewrote the entire codebase from scratch to obtain a cleaner, modular implementation instead of continuing with heavily modified prototype code.
+
 
 # Author
 
