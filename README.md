@@ -5,6 +5,14 @@
 
 ---
 
+## 👥 Contributions
+
+| Team Member | Contribution |
+|-------------|--------------|
+| **Bhakti Prasad & Satnoor Saran** | Studied and developed an understanding of the mathematical foundations and theoretical concepts underlying the implemented methods. |
+| **Surat** | Led the technical development of the project, comprising scope definition, methodology selection, implementation and debugging. |
+
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
