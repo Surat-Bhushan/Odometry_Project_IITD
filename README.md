@@ -5,7 +5,7 @@
 
 ---
 
-## 👥 Contributions
+## Team
 
 | Team Member | Contribution |
 |-------------|--------------|
