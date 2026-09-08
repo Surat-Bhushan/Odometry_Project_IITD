@@ -9,8 +9,9 @@
 
 | Team Member | Contribution |
 |-------------|--------------|
-| **[Bhakti Prasad] & Satnoor Saran** | Studied and developed an understanding of the mathematical foundations and theoretical concepts underlying the implemented methods. |
 | **Surat Bhushan** | Led the technical development of the project, comprising scope definition, methodology selection, implementation and debugging. |
+| **[Bhakti Prasad] & Satnoor Saran** | Studied and developed an understanding of the mathematical foundations and theoretical concepts underlying the implemented methods. |
+
 
 > **Acknowledgment** : I am sincerely grateful to Satnoor and Bhakti for their constant support throughout this project. Their encouragement, thoughtful discussions, and dedication to understanding the underlying concepts made the journey far more collaborative and enjoyable.
 
